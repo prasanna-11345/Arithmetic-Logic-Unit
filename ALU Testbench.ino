@@ -1,40 +1,41 @@
-module tb_sync_ram;
+// tb_alu.v
+`timescale 1ns / 1ps
 
-    reg clk;
-    reg we;
-    reg [3:0] addr;
-    reg [7:0] din;
-    wire [7:0] dout;
+module tb_ALU;
 
-    // Instantiate the RAM
-    sync_ram uut (
-        .clk(clk),
-        .we(we),
-        .addr(addr),
-        .din(din),
-        .dout(dout)
-    );
+reg [3:0] A, B;
+reg [2:0] ALU_Sel;
+wire [3:0] ALU_Out;
+wire CarryOut;
 
-    // Clock Generation
-    always #5 clk = ~clk;
+ALU uut (
+    .A(A),
+    .B(B),
+    .ALU_Sel(ALU_Sel),
+    .ALU_Out(ALU_Out),
+    .CarryOut(CarryOut)
+);
 
-    initial begin
-        // Initialize inputs
-        clk = 0;
-        we = 0;
-        addr = 0;
-        din = 0;
+initial begin
+    // Monitor values
+    $monitor("A = %b, B = %b, ALU_Sel = %b, ALU_Out = %b, CarryOut = %b", A, B, ALU_Sel, ALU_Out, CarryOut);
 
-        // Write some data
-        #10 we = 1; addr = 4'h1; din = 8'hAA;
-        #10 addr = 4'h2; din = 8'h55;
-        #10 addr = 4'h3; din = 8'hF0;
-        
-        // Read data
-        #10 we = 0; addr = 4'h1;
-        #10 addr = 4'h2;
-        #10 addr = 4'h3;
+    // Test addition
+    A = 4'b0101; B = 4'b0011; ALU_Sel = 3'b000; #10;
+    
+    // Test subtraction
+    A = 4'b0110; B = 4'b0010; ALU_Sel = 3'b001; #10;
+    
+    // Test AND
+    A = 4'b1100; B = 4'b1010; ALU_Sel = 3'b010; #10;
+    
+    // Test OR
+    A = 4'b1100; B = 4'b1010; ALU_Sel = 3'b011; #10;
 
-        #10 $finish;
-    end
+    // Test NOT
+    A = 4'b1100; ALU_Sel = 3'b100; #10;
+
+    $finish;
+end
+
 endmodule
